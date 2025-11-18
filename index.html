@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSRS Grand Exchange Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚔️ OSRS Grand Exchange Dashboard</h1>
+            <p class="subtitle">Real-time item pricing and trends from Old School RuneScape</p>
+            <div class="last-update">
+                Last updated: <span id="lastUpdate">Loading...</span>
+            </div>
+        </header>
+
+        <div class="controls">
+            <button id="refreshBtn" class="btn-refresh">🔄 Refresh Prices</button>
+            <div class="auto-refresh">
+                <label>
+                    <input type="checkbox" id="autoRefresh" checked>
+                    Auto-refresh (30s)
+                </label>
+            </div>
+        </div>
+
+        <div class="items-grid" id="itemsGrid">
+            <!-- Item cards will be dynamically inserted here -->
+        </div>
+
+        <section class="charts-section">
+            <h2>Price Trends</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="priceComparisonChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2>About This Dashboard</h2>
+            <p>This dashboard displays real-time Grand Exchange pricing data for Old School RuneScape items using the OSRS Wiki API. Prices are updated every 30 seconds by default.</p>
+            <p><strong>Data Source:</strong> <a href="https://prices.runescape.wiki" target="_blank">prices.runescape.wiki</a></p>
+            <p><strong>Items Tracked:</strong> Mithril Nails, Dragon Bones, Rune Scimitar, and more!</p>
+        </section>
+    </div>
+
+    <footer>
+        <p>Data provided by the OSRS Wiki | Not affiliated with Jagex Ltd.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

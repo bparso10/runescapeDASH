@@ -1,0 +1,355 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #d4af37;
+    --secondary-color: #8b7355;
+    --background-dark: #1a1a1a;
+    --background-light: #2d2d2d;
+    --text-color: #e0e0e0;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --border-color: #3d3d3d;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: var(--text-color);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 30px 0;
+    background: linear-gradient(135deg, var(--background-light) 0%, var(--background-dark) 100%);
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+header h1 {
+    font-size: 2.5em;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+    font-size: 1.1em;
+    color: var(--text-color);
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+.last-update {
+    font-size: 0.9em;
+    color: var(--warning-color);
+    margin-top: 10px;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background: var(--background-light);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.btn-refresh {
+    background: var(--primary-color);
+    color: var(--background-dark);
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh:hover {
+    background: #f0c850;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(212, 175, 55, 0.4);
+}
+
+.btn-refresh:active {
+    transform: translateY(0);
+}
+
+.auto-refresh label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.auto-refresh input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.item-card {
+    background: var(--background-light);
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.item-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary-color);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.item-card:hover::before {
+    transform: scaleX(1);
+}
+
+.item-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(212, 175, 55, 0.2);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.item-name {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.item-id {
+    font-size: 0.85em;
+    color: #888;
+}
+
+.price-info {
+    margin: 15px 0;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    padding: 8px;
+    background: var(--background-dark);
+    border-radius: 5px;
+}
+
+.price-label {
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.price-value {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.price-high {
+    color: var(--success-color);
+}
+
+.price-low {
+    color: var(--danger-color);
+}
+
+.price-neutral {
+    color: var(--warning-color);
+}
+
+.trend-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.trend-up {
+    background: rgba(76, 175, 80, 0.2);
+    color: var(--success-color);
+}
+
+.trend-down {
+    background: rgba(244, 67, 54, 0.2);
+    color: var(--danger-color);
+}
+
+.trend-stable {
+    background: rgba(255, 152, 0, 0.2);
+    color: var(--warning-color);
+}
+
+.volume-info {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.volume-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2em;
+    color: var(--warning-color);
+}
+
+.error {
+    background: rgba(244, 67, 54, 0.1);
+    border: 2px solid var(--danger-color);
+    color: var(--danger-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.charts-section {
+    margin: 40px 0;
+    padding: 30px;
+    background: var(--background-light);
+    border-radius: 10px;
+}
+
+.charts-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    font-size: 1.8em;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+}
+
+.chart-container {
+    background: var(--background-dark);
+    padding: 20px;
+    border-radius: 8px;
+    min-height: 300px;
+}
+
+.info-section {
+    background: var(--background-light);
+    padding: 25px;
+    border-radius: 10px;
+    margin: 30px 0;
+    border-left: 4px solid var(--primary-color);
+}
+
+.info-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.info-section p {
+    margin: 10px 0;
+    line-height: 1.8;
+}
+
+.info-section a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.info-section a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    color: #888;
+    border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-refresh {
+        width: 100%;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.updating {
+    animation: pulse 1s ease-in-out infinite;
+}
