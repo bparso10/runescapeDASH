@@ -19,10 +19,14 @@ const TRACKED_ITEMS = {
 
 // State management
 let priceData = {};
-let historicalData = {};
+let historicalData = {}; // Stores up to 1 day of price data for each item
+let itemMiniCharts = {}; // Stores Chart.js instances for mini-graphs
 let autoRefreshInterval = null;
 let priceComparisonChart = null;
 let volumeChart = null;
+
+// Configuration for historical data (1 day at 30s intervals = 2880 data points max)
+const MAX_HISTORICAL_POINTS = 2880; // 24 hours * 60 minutes * 2 (30s intervals)
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', () => {
@@ -99,8 +103,10 @@ async function fetchPriceData() {
 
         priceData = data.data;
         updateLastUpdateTime(data.timestamp || Date.now());
+        storeHistoricalData(data.timestamp || Date.now());
         renderItemCards();
         updateCharts();
+        updateMiniCharts();
 
     } catch (error) {
         console.error('Error fetching price data:', error);
@@ -118,6 +124,39 @@ function updateItemNames(mappingData) {
             TRACKED_ITEMS[item.id].examine = item.examine;
             TRACKED_ITEMS[item.id].members = item.members;
             TRACKED_ITEMS[item.id].limit = item.limit;
+        }
+    });
+}
+
+// Store historical price data for mini-graphs
+function storeHistoricalData(timestamp) {
+    Object.values(TRACKED_ITEMS).forEach(item => {
+        const itemData = priceData[item.id];
+
+        if (!itemData) return;
+
+        // Initialize historical data array for this item if it doesn't exist
+        if (!historicalData[item.id]) {
+            historicalData[item.id] = [];
+        }
+
+        const highPrice = itemData.high || 0;
+        const lowPrice = itemData.low || 0;
+        const avgPrice = highPrice && lowPrice ? Math.round((highPrice + lowPrice) / 2) : (highPrice || lowPrice);
+
+        // Add new data point
+        historicalData[item.id].push({
+            timestamp: timestamp,
+            avgPrice: avgPrice,
+            highPrice: highPrice,
+            lowPrice: lowPrice,
+            highVolume: itemData.highPriceVolume || 0,
+            lowVolume: itemData.lowPriceVolume || 0
+        });
+
+        // Keep only the last 24 hours of data (2880 data points at 30s intervals)
+        if (historicalData[item.id].length > MAX_HISTORICAL_POINTS) {
+            historicalData[item.id].shift();
         }
     });
 }
@@ -207,23 +246,143 @@ function createItemCard(item, data) {
             </div>
         </div>
 
-        <div class="volume-info">
-            <div class="volume-row">
-                <span class="price-label">High Volume:</span>
-                <span>${formatNumber(highVolume)}</span>
-            </div>
-            <div class="volume-row">
-                <span class="price-label">Low Volume:</span>
-                <span>${formatNumber(lowVolume)}</span>
-            </div>
-            <div class="volume-row">
-                <span class="price-label">Total Volume:</span>
-                <span><strong>${formatNumber(highVolume + lowVolume)}</strong></span>
-            </div>
+        <div class="mini-chart-container">
+            <div class="mini-chart-header">24-Hour Price Trend</div>
+            <canvas id="miniChart-${item.id}" class="mini-chart"></canvas>
         </div>
     `;
 
+    // Create mini-chart after DOM insertion
+    setTimeout(() => createMiniChart(item.id), 0);
+
     return card;
+}
+
+// Create mini-chart for an item
+function createMiniChart(itemId) {
+    const canvas = document.getElementById(`miniChart-${itemId}`);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+
+    // Get historical data for this item
+    const history = historicalData[itemId] || [];
+
+    // Prepare data for the chart
+    const labels = history.map(point => {
+        const date = new Date(point.timestamp);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    });
+
+    const prices = history.map(point => point.avgPrice);
+
+    // Destroy existing chart if it exists
+    if (itemMiniCharts[itemId]) {
+        itemMiniCharts[itemId].destroy();
+    }
+
+    // Create gradient for line
+    const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+    gradient.addColorStop(0, 'rgba(212, 175, 55, 0.4)');
+    gradient.addColorStop(1, 'rgba(212, 175, 55, 0.05)');
+
+    // Create new chart
+    itemMiniCharts[itemId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Price',
+                data: prices,
+                borderColor: '#d4af37',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#d4af37',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1,
+                pointHoverBackgroundColor: '#f0c850',
+                pointHoverBorderColor: '#fff',
+                pointHoverBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                    titleColor: '#d4af37',
+                    bodyColor: '#e0e0e0',
+                    borderColor: '#d4af37',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            if (history[context[0].dataIndex]) {
+                                const timestamp = history[context[0].dataIndex].timestamp;
+                                const date = new Date(timestamp);
+                                return date.toLocaleString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                });
+                            }
+                            return '';
+                        },
+                        label: function(context) {
+                            const dataPoint = history[context.dataIndex];
+                            if (!dataPoint) return '';
+
+                            return [
+                                `Average: ${formatGP(dataPoint.avgPrice)}`,
+                                `High: ${formatGP(dataPoint.highPrice)}`,
+                                `Low: ${formatGP(dataPoint.lowPrice)}`,
+                                `High Vol: ${formatNumber(dataPoint.highVolume)}`,
+                                `Low Vol: ${formatNumber(dataPoint.lowVolume)}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: false,
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    display: false,
+                    grid: {
+                        display: false
+                    },
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+}
+
+// Update all mini-charts with latest data
+function updateMiniCharts() {
+    Object.keys(itemMiniCharts).forEach(itemId => {
+        createMiniChart(parseInt(itemId));
+    });
 }
 
 // Format gold pieces (GP)
